@@ -839,10 +839,10 @@ graph TB
     end
 
     %% Connections between layers
-    Layer5 <-->|HTTPS/REST API| Layer4
-    Layer4 <-->|Internet (HTTPS/MQTT)| Layer3
-    Layer3 <-->|WiFi| Layer2
-    Layer2 <-->|I2C, UART, Interrupt| Layer1
+    Layer5 <--> Layer4
+    Layer4 <--> Layer3
+    Layer3 <--> Layer2
+    Layer2 <--> Layer1
 
     %% Sensor to Controller connections
     BME680 -->|I2C| ESP32
@@ -917,7 +917,7 @@ graph LR
     RG -->|Interrupt Pin 3| ARD
 
     %% WiFi Connection
-    ESP <-->|WiFi| MIFI
+    ESP <--> MIFI
 
     %% Power Connections
     LTC -->|5V| ARD
