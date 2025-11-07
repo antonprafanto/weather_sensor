@@ -793,10 +793,10 @@ graph TB
     subgraph Layer4["LAYER 4: CLOUD & AI PROCESSING"]
         Antares["Antares IoT Platform"]
         ClaudeAI["Claude AI API"]
-        WebServer["Web Server (Hosting)"]
+        WebServer["Web Server / Hosting"]
 
-        Antares -->|AI Analysis| ClaudeAI
-        ClaudeAI -->|Insights| WebServer
+        Antares --> ClaudeAI
+        ClaudeAI --> WebServer
     end
 
     subgraph Layer3["LAYER 3: CONNECTIVITY & GATEWAY"]
@@ -838,26 +838,30 @@ graph TB
         Batt2 --> LTC
     end
 
-    %% Connections between layers
-    Layer5 <--> Layer4
-    Layer4 <--> Layer3
-    Layer3 <--> Layer2
-    Layer2 <--> Layer1
+    %% Connections between layers (using simple arrows for compatibility)
+    Layer5 --> Layer4
+    Layer4 --> Layer5
+    Layer4 --> Layer3
+    Layer3 --> Layer4
+    Layer3 --> Layer2
+    Layer2 --> Layer3
+    Layer2 --> Layer1
+    Layer1 --> Layer2
 
     %% Sensor to Controller connections
-    BME680 -->|I2C| ESP32
-    UV -->|I2C| ESP32
-    Ambient -->|I2C| ESP32
-    PM25 -->|UART + Level Shifter| ESP32
-    WindDir -->|UART + Level Shifter| ESP32
-    Anemometer -->|Interrupt Pin 2| ArduinoNano
-    RainGauge -->|Interrupt Pin 3| ArduinoNano
+    BME680 --> ESP32
+    UV --> ESP32
+    Ambient --> ESP32
+    PM25 --> ESP32
+    WindDir --> ESP32
+    Anemometer --> ArduinoNano
+    RainGauge --> ArduinoNano
 
     %% Power connections
-    LTC -->|5V Power| ESP32
-    LTC -->|5V Power| ArduinoNano
-    LTC -->|Power| Layer1
-    LTC -->|Power| MiFi
+    LTC --> ESP32
+    LTC --> ArduinoNano
+    LTC --> Layer1
+    LTC --> MiFi
 
     style Layer5 fill:#e1f5ff,stroke:#01579b
     style Layer4 fill:#f3e5f5,stroke:#4a148c
@@ -866,6 +870,13 @@ graph TB
     style Layer1 fill:#fce4ec,stroke:#880e4f
     style Power fill:#fff9c4,stroke:#f57f17
 ```
+
+**Keterangan Koneksi Antar-Layer:**
+- **Layer 5 ↔ Layer 4**: HTTPS/REST API untuk akses data real-time dan historical
+- **Layer 4 ↔ Layer 3**: Internet (HTTPS/MQTT) via 4G LTE
+- **Layer 3 ↔ Layer 2**: WiFi 2.4GHz
+- **Layer 2 ↔ Layer 1**: I2C, UART, Interrupt (digital protocols)
+- **Power System**: Dual solar panels → Dual charge controllers → Dual batteries (parallel) → LTC3780 buck-boost converter → 5V regulated output untuk semua komponen
 
 #### 3.3.2 Blok Diagram Detail (Berdasarkan Flow Diagram)
 
@@ -902,27 +913,28 @@ graph LR
     end
 
     %% I2C Connections
-    BME -->|I2C 3.3V| ESP
-    UVS -->|I2C 3.3V| ESP
-    ALS -->|I2C 3.3V| ESP
+    BME --> ESP
+    UVS --> ESP
+    ALS --> ESP
 
     %% UART Connections via Level Shifter
-    PM -->|UART 5V| LS
-    WD -->|UART 5V| LS
-    ARD -->|UART TX 5V| LS
-    LS -->|UART 3.3V| ESP
+    PM --> LS
+    WD --> LS
+    ARD --> LS
+    LS --> ESP
 
     %% Interrupt Connections
-    ANE -->|Interrupt Pin 2| ARD
-    RG -->|Interrupt Pin 3| ARD
+    ANE --> ARD
+    RG --> ARD
 
     %% WiFi Connection
-    ESP <--> MIFI
+    ESP --> MIFI
+    MIFI --> ESP
 
     %% Power Connections
-    LTC -->|5V| ARD
-    LTC -->|5V| REG
-    REG -->|3.3V| ESP
+    LTC --> ARD
+    LTC --> REG
+    REG --> ESP
 
     style Sensors fill:#fce4ec,stroke:#880e4f
     style Controllers fill:#e8f5e9,stroke:#1b5e20
@@ -930,6 +942,14 @@ graph LR
     style Network fill:#e1f5ff,stroke:#01579b
     style Power_Supply fill:#fff9c4,stroke:#f57f17
 ```
+
+**Keterangan Koneksi Detail:**
+- **I2C Sensors → ESP32**: BME680 (0x76), UV Sensor (0x53), Ambient Light (0x94) - semua 3.3V
+- **UART Sensors → Logic Level Shifter → ESP32**: PM2.5 dan Wind Direction - konversi 5V ke 3.3V
+- **Arduino → Logic Level Shifter → ESP32**: Data wind speed & rainfall via UART - konversi 5V ke 3.3V
+- **Interrupt Sensors → Arduino**: Anemometer (Pin 2) dan Rain Gauge (Pin 3) - counting berbasis interrupt
+- **ESP32 ↔ MiFi**: Komunikasi WiFi bidirectional untuk upload data dan receive commands
+- **Power**: LTC3780 menyediakan 5V stabil → Arduino Nano langsung, ESP32 via regulator 3.3V
 
 **Data Flow Sequence:**
 
