@@ -784,91 +784,49 @@ Aplikasi AI dalam weather forecasting:
 
 ```mermaid
 graph TB
-    subgraph Layer5["LAYER 5: USER INTERFACE"]
-        WebDash["Web Dashboard"]
-        MobileApp["Mobile App"]
-        DesktopMon["Desktop Monitor"]
-    end
+    %% LAYER 5 - User Interface
+    User["👤 USER"]
+    Dashboard["📊 Web Dashboard<br/>& Mobile App"]
 
-    subgraph Layer4["LAYER 4: CLOUD & AI PROCESSING"]
-        Antares["Antares IoT Platform"]
-        ClaudeAI["Claude AI API"]
-        WebServer["Web Server / Hosting"]
+    %% LAYER 4 - Cloud & AI
+    Cloud["☁️ CLOUD PLATFORM<br/>Antares IoT + Claude AI"]
 
-        Antares --> ClaudeAI
-        ClaudeAI --> WebServer
-    end
+    %% LAYER 3 - Connectivity
+    Gateway["📡 GATEWAY<br/>MiFi 4G LTE"]
 
-    subgraph Layer3["LAYER 3: CONNECTIVITY & GATEWAY"]
-        MiFi["MiFi 4G LTE (M22)<br/>WiFi Hotspot 2.4GHz"]
-    end
+    %% LAYER 2 - Controllers (Simplified)
+    Controllers["🎛️ CONTROLLERS<br/>ESP32 + Arduino Nano"]
 
-    subgraph Layer2["LAYER 2: EDGE PROCESSING & CONTROL"]
-        ESP32["ESP32 (Main Controller)<br/>• WiFi communication<br/>• I2C master<br/>• UART receiver<br/>• Data aggregation<br/>• Edge computing"]
-        ArduinoNano["Arduino Nano (Sensor Controller)<br/>• Interrupt handling<br/>• Frequency counting<br/>• Tip counting<br/>• UART transmitter"]
+    %% LAYER 1 - Sensors (Grouped)
+    Sensors["🌡️ SENSORS (7 units)<br/>Temperature • Humidity • Pressure<br/>UV • PM2.5 • Wind • Rain"]
 
-        ArduinoNano -->|UART via Level Shifter| ESP32
-    end
+    %% Power System (Simplified)
+    Power["🔋 POWER<br/>Solar Panels + Batteries<br/>LTC3780 Converter"]
 
-    subgraph Layer1["LAYER 1: SENSOR & ACTUATOR"]
-        BME680["BME680<br/>(I2C)"]
-        UV["UV Sensor<br/>(I2C)"]
-        Ambient["Ambient Light<br/>(I2C)"]
-        PM25["PM2.5<br/>(UART)"]
-        WindDir["Wind Direction<br/>(UART)"]
-        Anemometer["Anemometer<br/>(Interrupt)"]
-        RainGauge["Rain Gauge<br/>(Interrupt)"]
-    end
-
-    subgraph Power["POWER MANAGEMENT SYSTEM"]
-        Solar1["Solar Panel 1"]
-        Solar2["Solar Panel 2"]
-        Ctrl1["Controller 1"]
-        Ctrl2["Controller 2"]
-        Batt1["Battery 1"]
-        Batt2["Battery 2"]
-        LTC["LTC3780 Buck-Boost<br/>(5V regulated)"]
-
-        Solar1 --> Ctrl1
-        Solar2 --> Ctrl2
-        Ctrl1 --> Batt1
-        Ctrl2 --> Batt2
-        Batt1 <-->|Parallel 12V| Batt2
-        Batt1 --> LTC
-        Batt2 --> LTC
-    end
-
-    %% Connections between layers (using simple arrows for compatibility)
-    Layer5 --> Layer4
-    Layer4 --> Layer5
-    Layer4 --> Layer3
-    Layer3 --> Layer4
-    Layer3 --> Layer2
-    Layer2 --> Layer3
-    Layer2 --> Layer1
-    Layer1 --> Layer2
-
-    %% Sensor to Controller connections
-    BME680 --> ESP32
-    UV --> ESP32
-    Ambient --> ESP32
-    PM25 --> ESP32
-    WindDir --> ESP32
-    Anemometer --> ArduinoNano
-    RainGauge --> ArduinoNano
+    %% Main data flow (top to bottom)
+    User --> Dashboard
+    Dashboard --> Cloud
+    Cloud --> Dashboard
+    Cloud --> Gateway
+    Gateway --> Cloud
+    Gateway --> Controllers
+    Controllers --> Gateway
+    Controllers --> Sensors
+    Sensors --> Controllers
 
     %% Power connections
-    LTC --> ESP32
-    LTC --> ArduinoNano
-    LTC --> Layer1
-    LTC --> MiFi
+    Power -.-> Controllers
+    Power -.-> Sensors
+    Power -.-> Gateway
 
-    style Layer5 fill:#e1f5ff,stroke:#01579b
-    style Layer4 fill:#f3e5f5,stroke:#4a148c
-    style Layer3 fill:#fff3e0,stroke:#e65100
-    style Layer2 fill:#e8f5e9,stroke:#1b5e20
-    style Layer1 fill:#fce4ec,stroke:#880e4f
-    style Power fill:#fff9c4,stroke:#f57f17
+    %% Styling
+    style User fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style Dashboard fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    style Cloud fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style Gateway fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style Controllers fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    style Sensors fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    style Power fill:#fff9c4,stroke:#f57f17,stroke-width:2px
 ```
 
 **Keterangan Koneksi Antar-Layer:**
@@ -883,64 +841,53 @@ graph TB
 **Koneksi Sensor ke Mikrokontroler:**
 
 ```mermaid
-graph LR
-    subgraph Sensors["SENSORS"]
-        BME["BME680<br/>Addr: 0x76<br/>Temp, Humidity,<br/>Pressure, VOC"]
-        UVS["UV Sensor LTR390<br/>Addr: 0x53<br/>UV Index"]
-        ALS["Ambient Light<br/>Addr: 0x94<br/>Lux"]
-        PM["PM2.5 Sensor<br/>PM1.0, PM2.5, PM10"]
-        WD["Wind Direction<br/>Cardinal Direction"]
-        ANE["Anemometer<br/>Hall Sensor<br/>Wind Speed"]
-        RG["Rain Gauge<br/>Tipping Bucket<br/>Rainfall"]
-    end
+graph TB
+    %% Sensors grouped by interface type
+    I2C["🌡️ I2C SENSORS<br/>BME680 • UV • Light"]
+    UART["📡 UART SENSORS<br/>PM2.5 • Wind Direction"]
+    INT["⚡ INTERRUPT SENSORS<br/>Anemometer • Rain Gauge"]
 
-    subgraph Controllers["MICROCONTROLLERS"]
-        ESP["ESP32<br/>(Main Controller)<br/>3.3V"]
-        ARD["Arduino Nano<br/>(Sensor Controller)<br/>5V"]
-    end
+    %% Controllers
+    ESP["ESP32<br/>Main Controller<br/>3.3V"]
+    ARD["Arduino Nano<br/>Sensor Controller<br/>5V"]
 
-    subgraph Interface["INTERFACE"]
-        LS["Logic Level<br/>Shifter<br/>5V ↔ 3.3V"]
-    end
+    %% Interface
+    LVL["Level Shifter<br/>5V ↔ 3.3V"]
 
-    subgraph Network["NETWORK"]
-        MIFI["MiFi 4G LTE<br/>WiFi 2.4GHz"]
-    end
+    %% Network
+    WIFI["MiFi 4G LTE<br/>WiFi Gateway"]
 
-    subgraph Power_Supply["POWER SUPPLY"]
-        LTC["LTC3780<br/>Buck-Boost<br/>5V Output"]
-        REG["3.3V Regulator"]
-    end
+    %% Power
+    PWR["🔋 Power Supply<br/>LTC3780 → 5V"]
 
-    %% I2C Connections
-    BME --> ESP
-    UVS --> ESP
-    ALS --> ESP
+    %% Connections - Sensors to Controllers
+    I2C -->|I2C 3.3V| ESP
+    UART -->|UART 5V| LVL
+    INT -->|Digital Pin| ARD
 
-    %% UART Connections via Level Shifter
-    PM --> LS
-    WD --> LS
-    ARD --> LS
-    LS --> ESP
+    %% Controller to Controller
+    ARD -->|UART 5V| LVL
+    LVL -->|UART 3.3V| ESP
 
-    %% Interrupt Connections
-    ANE --> ARD
-    RG --> ARD
+    %% Network
+    ESP <-->|WiFi| WIFI
 
-    %% WiFi Connection
-    ESP --> MIFI
-    MIFI --> ESP
+    %% Power distribution
+    PWR -->|5V| ARD
+    PWR -->|5V → 3.3V| ESP
+    PWR -.->|Power| I2C
+    PWR -.->|Power| UART
+    PWR -.->|Power| INT
 
-    %% Power Connections
-    LTC --> ARD
-    LTC --> REG
-    REG --> ESP
-
-    style Sensors fill:#fce4ec,stroke:#880e4f
-    style Controllers fill:#e8f5e9,stroke:#1b5e20
-    style Interface fill:#fff3e0,stroke:#e65100
-    style Network fill:#e1f5ff,stroke:#01579b
-    style Power_Supply fill:#fff9c4,stroke:#f57f17
+    %% Styling
+    style I2C fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style UART fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style INT fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    style ESP fill:#e1f5ff,stroke:#0277bd,stroke-width:3px
+    style ARD fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style LVL fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    style WIFI fill:#e0f2f1,stroke:#00796b,stroke-width:2px
+    style PWR fill:#fff9c4,stroke:#f57f17,stroke-width:2px
 ```
 
 **Keterangan Koneksi Detail:**
@@ -1811,38 +1758,33 @@ timeline
 ### 7.1 Struktur Tim
 
 ```mermaid
-graph TD
-    Pembimbing["Dosen Pembimbing<br/>[Nama Dosen]<br/>Supervisi & Guidance"]
+graph TB
+    Supervisor["👨‍🏫 Dosen Pembimbing<br/>Supervisi & Guidance"]
 
-    Ketua["Ketua Tim<br/>[Nama Ketua]<br/>IoT Systems & Embedded Programming"]
-    Anggota1["Anggota 1<br/>[Nama Anggota 1]<br/>Data Science & AI/ML"]
-    Anggota2["Anggota 2<br/>[Nama Anggota 2]<br/>Web Development & UI/UX"]
+    Leader["👨‍💻 Ketua Tim<br/>Hardware & Embedded"]
+    Member1["👨‍🔬 Anggota 1<br/>Cloud & AI"]
+    Member2["👨‍🎨 Anggota 2<br/>Frontend & UI"]
 
-    Hardware["Hardware<br/>• Assembly<br/>• Integration<br/>• ESP32 Firmware"]
-    Cloud["Cloud & AI<br/>• Antares Platform<br/>• Claude AI<br/>• Data Analysis"]
-    Frontend["Frontend<br/>• Web Dashboard<br/>• Mobile App<br/>• Visualization"]
+    Supervisor -->|Supervisi| Leader
+    Supervisor -->|Supervisi| Member1
+    Supervisor -->|Supervisi| Member2
 
-    Pembimbing -.Supervisi.-> Ketua
-    Pembimbing -.Supervisi.-> Anggota1
-    Pembimbing -.Supervisi.-> Anggota2
+    Leader -->|Lead| HW["🔧 Hardware<br/>ESP32 + Arduino<br/>Assembly"]
+    Member1 -->|Lead| CL["☁️ Cloud & AI<br/>Antares + Claude<br/>Analytics"]
+    Member2 -->|Lead| FE["🎨 Frontend<br/>Dashboard<br/>Visualization"]
 
-    Ketua --> Hardware
-    Ketua -.Koordinasi.-> Cloud
-    Ketua -.Koordinasi.-> Frontend
+    Leader -.Koordinasi.-> CL
+    Leader -.Koordinasi.-> FE
+    Member1 -.Support.-> HW
+    Member2 -.Support.-> CL
 
-    Anggota1 --> Cloud
-    Anggota1 -.Support.-> Hardware
-
-    Anggota2 --> Frontend
-    Anggota2 -.Support.-> Cloud
-
-    style Pembimbing fill:#e1f5ff,stroke:#01579b
-    style Ketua fill:#e8f5e9,stroke:#1b5e20
-    style Anggota1 fill:#f3e5f5,stroke:#4a148c
-    style Anggota2 fill:#fff3e0,stroke:#e65100
-    style Hardware fill:#ffebee,stroke:#c62828
-    style Cloud fill:#f1f8e9,stroke:#558b2f
-    style Frontend fill:#fce4ec,stroke:#880e4f
+    style Supervisor fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    style Leader fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style Member1 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style Member2 fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style HW fill:#ffebee,stroke:#c62828
+    style CL fill:#e0f2f1,stroke:#00796b
+    style FE fill:#fce4ec,stroke:#880e4f
 ```
 
 **Ketua Tim:**
